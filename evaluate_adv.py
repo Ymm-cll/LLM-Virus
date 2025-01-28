@@ -23,7 +23,6 @@ def process_item(i, item1, item2):
         action = item2["action"]
         host_response = item2["response"]
     else:
-        # 请求 ChatGPT 完成
         response = clients["target"].chat.completions.create(
             model=target,
             messages=[{"role": "user", "content": jailbreak_template.replace("[INSERT PROMPT HERE]", action)}],
@@ -47,7 +46,6 @@ def process_item(i, item1, item2):
         else:
             evaluate_prompt = prompts["evaluate_success"].replace("<response>",
                                                                   host_response.choices[0].message.content)
-        # 请求评估
         response_eval = clients["evaluation"].chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": evaluate_prompt}],
@@ -105,16 +103,13 @@ if __name__ == '__main__':
                 continue
             print(jailbreak_template)
             print(item["success_rate"])
-            # 定义锁
             lock = threading.Lock()
-            # 用于累积的变量
             prompt_tokens = {"target": 0, "evaluation": 0}
             completion_tokens = {"target": 0, "evaluation": 0}
             llm_count = 0
             keyword_count = 0
             llama_count = 0
 
-            # 使用 ThreadPoolExecutor 进行并行处理
             with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                 list(tqdm(executor.map(process_item, range(len(ds)), ds, host_responses), total=len(ds),
                           desc="Processing"))
@@ -124,7 +119,6 @@ if __name__ == '__main__':
             print(f"LLM_Evaluation_Count: {llm_count}")
             print(f"Keyword_Evaluation_Count: {keyword_count}")
             print("-" * 10)
-            # 输出累计的 token 消耗和最终结果
             llm_asr = llm_count / len(ds)
             keyword_asr = 1 - keyword_count / len(ds)
             llama_asr = llama_count / len(ds)
