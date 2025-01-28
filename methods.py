@@ -36,13 +36,10 @@ def download_dataset(dataset_name, save_path, sample_num):
         if sample_num == None:
             sample_data = ds["harmful"] if dataset_name == "jbb" else ds["train"]
         else:
-            # 采样100条数据
             sample_data = random.sample(list(ds['train']), sample_num)
 
-        # 确保保存路径存在
         os.makedirs(save_path, exist_ok=True)
 
-        # 保存为文本文件
         with open(os.path.join(save_path, f'{dataset_name}.jsonl'), 'w', encoding="utf-8") as f:
             for item in sample_data:
                 f.write(str(item) + '\n')
@@ -78,7 +75,7 @@ def clean_jailbreak_ds():
 def random_pairs(lst, n):
     pairs = []
     for _ in range(n):
-        pair = random.sample(lst, 2)  # 随机选择2个元素
+        pair = random.sample(lst, 2)
         pairs.append(pair)
     return pairs
 
@@ -96,7 +93,6 @@ def get_geneartions(target, eid, bench_name):
 
 
 if __name__ == "__main__":
-    # 示例调用
     download_dataset("jailbreak", "./dataset", sample_num=None)
     # download_dataset("advbench", "./dataset", sample_num=None)
     # download_dataset("jbb", "./dataset", sample_num=None)
