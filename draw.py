@@ -48,7 +48,7 @@ def linechart(eids, targets):
         "gemma": "^"
     }
     plt.rcParams['font.family'] = 'Comic Sans MS'
-    colors = plt.get_cmap('tab20', len(targets))  # 获取颜色映射
+    colors = plt.get_cmap('tab20', len(targets))
 
     for i, target in enumerate(targets):
         if "gpt" in target:
@@ -116,18 +116,15 @@ def scatter(eid, target):
             temp_gen.append(item["prompt"])
         generations.append(temp_gen)
 
-    # 加载 SentenceTransformer 模型
     model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
-    # 获取每个generation的文本的嵌入向量
     embeddings_list = []
     labels = []
     for i, generation in enumerate(generations):
         embeddings = model.encode(generation)
         embeddings_list.append(embeddings)
-        labels.extend([i] * len(generation))  # 为每个文本分配一个 generation 的标签
+        labels.extend([i] * len(generation))
 
-    # 合并所有 generation 的嵌入向量
     embeddings = np.vstack(embeddings_list)
     print(embeddings.shape)
 
@@ -135,24 +132,19 @@ def scatter(eid, target):
     embeddings_2d = pca.fit_transform(embeddings)
     print(embeddings_2d.shape)
     print(embeddings_2d)
-    # 可视化结果
     plt.figure(figsize=(8, 6))
 
-    # 使用 colormap 生成不同颜色
-    colors = plt.get_cmap('tab20', len(generations))  # 获取颜色映射
+    colors = plt.get_cmap('tab20', len(generations))
 
-    # 为每个 generation 绘制散点图，使用不同的颜色
     for i in range(len(generations)):
         indices = np.array(labels) == i
         plt.scatter(embeddings_2d[indices, 0], embeddings_2d[indices, 1], label=f'Generation {i}', s=50, color=colors(i), marker="x")
 
-    # 设置图表标题和标签
     plt.title('Text Embeddings Visualization (2D)', fontsize=16)
     plt.xlabel('Dimension 1', fontsize=14)
     plt.ylabel('Dimension 2', fontsize=14)
     plt.legend(loc="lower right", framealpha=0.5)
 
-    # 在 Jupyter 中通常不需要调用 plt.show()
     plt.show()
 
 
