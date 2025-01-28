@@ -8,12 +8,12 @@ from local_llm import LocalLLM
 def get_client(type):
     client = None
     if type == "api":
-        client = OpenAI(api_key="sk-mKqLDKwq8nyywzXiZGSjBakm2TeTifoYpbPOj6dI1c58V6Hx", base_url="https://api2.aigcbest.top/v1")
+        client = OpenAI(api_key="xxx", base_url="xxx")
     if type == "local":
         client = LocalLLM()
     if type == "llama":
-        client = OpenAI(api_key="LA-c24dc469fa0a4ab2a87dc5ccca52d8fadbf995afc2834f228f8122b6291b804f",
-                          base_url="https://api.llama-api.com")
+        client = OpenAI(api_key="xxx",
+                          base_url="xxx")
     return client
 
 
