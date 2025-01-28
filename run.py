@@ -6,7 +6,7 @@ import methods
 from prompt import prompts
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
-from tqdm import tqdm  # 进度条库
+from tqdm import tqdm
 
 random.seed(42)
 
@@ -30,7 +30,7 @@ class EvoJailbreak:
         self.bench_name = bench_name
         self.harm_action = []
         self.token_consumption = []
-        self.lock = threading.Lock()  # 用于防止写冲突
+        self.lock = threading.Lock()
         for item in methods.get_dataset(f"{bench_name}_local"):
             self.harm_action.append(item["prompt"])
         self.reference = None
@@ -92,11 +92,9 @@ class EvoJailbreak:
             return [jailbreak, response]
 
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            # 创建 evaluate 的任务
             evaluation_futures = [executor.submit(test, jailbreak) for jailbreak in
                                   ds_jailbreak_prompt]
 
-            # 显示进度条并更新 success_rate
             for idx, future in enumerate(tqdm(as_completed(evaluation_futures), total=len(evaluation_futures),
                                               desc="Before Initialization")):
                 with self.lock:
@@ -143,13 +141,10 @@ class EvoJailbreak:
             sorted(temp, key=lambda x: (x["success_rate"], x["length"]), reverse=True)[:self.max_generation])
         print(f"Initialized {len(self.generation[0])} prompts in generation 0.")
 
-        # 使用并行 evaluate 评估每个 prompt
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            # 创建 evaluate 的任务
             evaluation_futures = [executor.submit(self.evaluate_single, ind) for ind in
                                   self.generation[0]]
 
-            # 显示进度条并更新 success_rate
             for idx, future in enumerate(tqdm(as_completed(evaluation_futures), total=len(evaluation_futures),
                                               desc="Evaluating Initial Generation")):
                 self.generation[0][idx] = future.result()
@@ -186,7 +181,6 @@ class EvoJailbreak:
         # with self.lock:
         #     print(response.choices[0].message.content)
 
-        # 记录 tokens，并加锁
         with self.lock:
             if response.usage.prompt_tokens and response.usage.completion_tokens:
                 self.token_consumption[-1]["mutation"]["prompt_tokens"] += response.usage.prompt_tokens
@@ -208,7 +202,6 @@ class EvoJailbreak:
             max_tokens=self.max_tokens["crossover"]
         )
 
-        # 记录 tokens，并加锁
         with self.lock:
             if response.usage.prompt_tokens and response.usage.completion_tokens:
                 self.token_consumption[-1]["crossover"]["prompt_tokens"] += response.usage.prompt_tokens
@@ -216,7 +209,7 @@ class EvoJailbreak:
 
         return self.clean(self.parser(response.choices[0].message.content))
 
-    def evaluate_single(self, individual, new_history_len=2, num_threads=4):  # num_threads 参数控制并行线程数
+    def evaluate_single(self, individual, new_history_len=2, num_threads=4):
         jailbreak_prompt = individual["prompt"]
         if individual["success_rate"] == -1:
             test_cases = []
@@ -266,7 +259,6 @@ class EvoJailbreak:
                                 "completion_tokens"] += response_eval.usage.completion_tokens
                 return test_case
 
-            # 指定并行线程数
             with ThreadPoolExecutor(max_workers=num_threads) as executor:
                 futures = [executor.submit(process_action, action) for action in self.harm_action]
                 for future in as_completed(futures):
